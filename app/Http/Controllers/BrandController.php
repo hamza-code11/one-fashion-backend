@@ -5,16 +5,19 @@ namespace App\Http\Controllers;
 use App\Models\Brand;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 
 class BrandController extends Controller
 {
+    private const CACHE_KEY = 'brands.all';
+
     // Website - All brands
     public function index()
     {
         $brands = Cache::remember(
-            'brands.all',
+            self::CACHE_KEY,
             600,
-            fn () => Brand::latest()->get()
+            fn () => Brand::withCount('products')->latest()->get()
         );
 
         return response()->json([
@@ -22,19 +25,11 @@ class BrandController extends Controller
         ]);
     }
 
-
-    // Admin - List + Search + Pagination
-    public function adminIndex(Request $request)
+    // Admin - List + Pagination
+    public function adminIndex()
     {
-        $search = $request->input('search');
-
         $brands = Brand::query()
-            ->when($search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('slug', 'like', "%{$search}%");
-                });
-            })
+            ->withCount('products')
             ->latest()
             ->paginate(10);
 
@@ -42,59 +37,109 @@ class BrandController extends Controller
     }
 
 
+    // Admin - Single brand
+public function show(Brand $brand)
+{
+    return response()->json([
+        'brand' => $brand->loadCount('products'),
+    ]);
+}
+
+    // Admin - Search
+    public function search(Request $request)
+    {
+        $search = $request->input('search');
+
+        $brands = Brand::query()
+            ->withCount('products')
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('slug', 'like', "%{$search}%");
+                });
+            })
+            ->latest()
+            ->limit(50)
+            ->get();
+
+        return response()->json([
+            'brands' => $brands,
+        ]);
+    }
+
     // Admin - Create
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:brands,slug',
+            'name'        => 'required|string|max:255',
+            'slug'        => 'required|string|max:255|unique:brands,slug',
             'description' => 'nullable|string',
-            'image' => 'nullable|string|max:2048',
+            'image'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
+
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('brands', 'public');
+        }
 
         $brand = Brand::create($validated);
 
-        // Website cache clear
-        Cache::forget('brands.all');
+        Cache::forget(self::CACHE_KEY);
 
         return response()->json([
             'message' => 'Brand created successfully.',
-            'brand' => $brand,
+            'brand'   => $brand,
         ], 201);
     }
 
-
     // Admin - Update
-    public function update(
-        Request $request,
-        Brand $brand
-    ) {
+    public function update(Request $request, Brand $brand)
+    {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:brands,slug,' . $brand->id,
+            'name'        => 'required|string|max:255',
+            'slug'        => 'required|string|max:255|unique:brands,slug,' . $brand->id,
             'description' => 'nullable|string',
-            'image' => 'nullable|string|max:2048',
+            'image'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'removeImage' => 'nullable|boolean',
         ]);
+
+        unset($validated['removeImage']);
+
+        if ($request->hasFile('image')) {
+            if ($brand->image) {
+                Storage::disk('public')->delete($brand->image);
+            }
+
+            $validated['image'] = $request->file('image')->store('brands', 'public');
+        } elseif ($request->boolean('removeImage')) {
+            if ($brand->image) {
+                Storage::disk('public')->delete($brand->image);
+            }
+
+            $validated['image'] = null;
+        } else {
+            unset($validated['image']);
+        }
 
         $brand->update($validated);
 
-        // Website cache clear
-        Cache::forget('brands.all');
+        Cache::forget(self::CACHE_KEY);
 
         return response()->json([
             'message' => 'Brand updated successfully.',
-            'brand' => $brand->fresh(),
+            'brand'   => $brand->fresh(),
         ]);
     }
-
 
     // Admin - Delete
     public function destroy(Brand $brand)
     {
+        if ($brand->image) {
+            Storage::disk('public')->delete($brand->image);
+        }
+
         $brand->delete();
 
-        // Website cache clear
-        Cache::forget('brands.all');
+        Cache::forget(self::CACHE_KEY);
 
         return response()->json([
             'message' => 'Brand deleted successfully.',

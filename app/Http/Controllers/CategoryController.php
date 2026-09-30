@@ -4,21 +4,23 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {
+    private const CACHE_KEY = 'categories.all';
+
     // -----------------------------------------
     // Public Website - All Categories
     // -----------------------------------------
     public function index()
     {
-        $categories = cache()->remember(
-            'categories.all',
-            now()->addMinutes(30),
-            function () {
-                return Category::orderBy('id')->get();
-            }
+        $categories = Cache::remember(
+            self::CACHE_KEY,
+            600,
+            fn () => Category::withCount('products')->latest()->get()
         );
 
         return response()->json([
@@ -26,30 +28,52 @@ class CategoryController extends Controller
         ]);
     }
 
-
     // -----------------------------------------
     // Admin - Paginated Categories
     // -----------------------------------------
-    public function adminIndex(Request $request)
+    public function adminIndex()
     {
-        $search = trim($request->input('search', ''));
+        $categories = Category::query()
+            ->withCount('products')
+            ->latest()
+            ->paginate(10);
+
+        return response()->json($categories);
+    }
+
+    // -----------------------------------------
+    // Admin - Search
+    // -----------------------------------------
+    public function search(Request $request)
+    {
+        $search = $request->input('search');
 
         $categories = Category::query()
-            ->when($search, function ($query) use ($search) {
+            ->withCount('products')
+            ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('slug', 'like', "%{$search}%")
-                      ->orWhere('description', 'like', "%{$search}%");
+                        ->orWhere('slug', 'like', "%{$search}%");
                 });
             })
-            ->orderBy('id', 'desc')
-            ->paginate(10);
+            ->latest()
+            ->limit(50)
+            ->get();
 
         return response()->json([
             'categories' => $categories,
         ]);
     }
 
+    // -----------------------------------------
+    // Admin - Single category
+    // -----------------------------------------
+    public function show(Category $category)
+    {
+        return response()->json([
+            'category' => $category->loadCount('products'),
+        ]);
+    }
 
     // -----------------------------------------
     // Store
@@ -57,75 +81,85 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:100|unique:categories,name',
-            'slug' => 'nullable|string|max:120|unique:categories,slug',
+            'name'        => 'required|string|max:100|unique:categories,name',
+            'slug'        => 'required|string|max:120|unique:categories,slug',
             'description' => 'nullable|string',
-            'image' => 'nullable|string|max:500',
+            'image'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
 
-        $validated['slug'] = $validated['slug']
-            ?? Str::slug($validated['name']);
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('categories', 'public');
+        }
 
         $category = Category::create($validated);
 
-        // Clear public cache
-        cache()->forget('categories.all');
+        Cache::forget(self::CACHE_KEY);
 
         return response()->json([
-            'message' => 'Category created successfully.',
+            'message'  => 'Category created successfully.',
             'category' => $category,
         ], 201);
     }
 
-
     // -----------------------------------------
     // Update
     // -----------------------------------------
-    public function update(
-        Request $request,
-        Category $category
-    ) {
+    public function update(Request $request, Category $category)
+    {
         $validated = $request->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:100',
-                'unique:categories,name,' . $category->id,
-            ],
-            'slug' => [
-                'nullable',
-                'string',
-                'max:120',
-                'unique:categories,slug,' . $category->id,
-            ],
+            'name'        => 'required|string|max:100|unique:categories,name,' . $category->id,
+            'slug'        => 'required|string|max:120|unique:categories,slug,' . $category->id,
             'description' => 'nullable|string',
-            'image' => 'nullable|string|max:500',
+            'image'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'removeImage' => 'nullable|boolean',
         ]);
 
-        $validated['slug'] = $validated['slug']
-            ?? Str::slug($validated['name']);
+        unset($validated['removeImage']);
+
+        if ($request->hasFile('image')) {
+            if ($category->image) {
+                Storage::disk('public')->delete($category->image);
+            }
+
+            $validated['image'] = $request->file('image')->store('categories', 'public');
+        } elseif ($request->boolean('removeImage')) {
+            if ($category->image) {
+                Storage::disk('public')->delete($category->image);
+            }
+
+            $validated['image'] = null;
+        } else {
+            unset($validated['image']);
+        }
 
         $category->update($validated);
 
-        // Clear public cache
-        cache()->forget('categories.all');
+        Cache::forget(self::CACHE_KEY);
 
         return response()->json([
-            'message' => 'Category updated successfully.',
+            'message'  => 'Category updated successfully.',
             'category' => $category->fresh(),
         ]);
     }
-
 
     // -----------------------------------------
     // Delete
     // -----------------------------------------
     public function destroy(Category $category)
     {
+        if ($category->products()->exists()) {
+            return response()->json([
+                'message' => 'Cannot delete category — it has products attached.',
+            ], 422);
+        }
+
+        if ($category->image) {
+            Storage::disk('public')->delete($category->image);
+        }
+
         $category->delete();
 
-        // Clear public cache
-        cache()->forget('categories.all');
+        Cache::forget(self::CACHE_KEY);
 
         return response()->json([
             'message' => 'Category deleted successfully.',

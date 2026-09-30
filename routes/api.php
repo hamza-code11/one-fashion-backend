@@ -51,20 +51,25 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     // collections 
     Route::get('/collections', [CollectionController::class, 'adminIndex']);
     Route::post('/collections', [ CollectionController::class, 'store']);
+    Route::get('/collections/{collection}', [CollectionController::class, 'show']);
     Route::put('/collections/{collection}', [CollectionController::class, 'update']);
     Route::delete('/collections/{collection}', [CollectionController::class, 'destroy']);
 
 
     // Brands
     Route::get('/brands', [BrandController::class, 'adminIndex']);
+    Route::get('/brands/search', [BrandController::class, 'search']);
     Route::post('/brands', [BrandController::class, 'store']);
+    Route::get('/brands/{brand}', [BrandController::class, 'show']);
     Route::put('/brands/{brand}', [BrandController::class, 'update']);
     Route::delete('/brands/{brand}', [BrandController::class, 'destroy']);
 
 
     // Categories
     Route::get('/categories', [CategoryController::class, 'adminIndex']);
+    Route::get('/categories/search', [CategoryController::class, 'search']);  
     Route::post('/categories', [CategoryController::class, 'store']);
+    Route::get('/categories/{category}', [CategoryController::class, 'show']);
     Route::put('/categories/{category}', [CategoryController::class, 'update']);
     Route::delete('/categories/{category}', [CategoryController::class, 'destroy']);
 
@@ -73,16 +78,21 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::get('/products', [ProductController::class, 'adminIndex']);
     Route::get('/products/search', [ProductController::class, 'search']);
     Route::post('/products', [ProductController::class, 'store']);
+    Route::get('/products/{product}', [ProductController::class, 'adminShow']);
     Route::put('/products/{product}', [ProductController::class, 'update']);
     Route::delete('/products/{product}', [ProductController::class, 'destroy']);
 
 
 
     // Products form dropdown data
-    Route::get('/brands', [ProductOptionController::class, 'brands']);
-    Route::get('/categories', [ProductOptionController::class, 'categories']);
-    Route::get('/collections', [ProductOptionController::class, 'collections']);
-    Route::get('/sizes', [ProductOptionController::class, 'sizes']);
+    Route::prefix('product-options')->group(function () {
+
+        Route::get('/brands', [ProductOptionController::class, 'brands']);
+        Route::get('/categories', [ProductOptionController::class, 'categories']);
+        Route::get('/collections', [ProductOptionController::class, 'collections']);
+        Route::get('/sizes', [ProductOptionController::class, 'sizes']);
+
+    });
 
 });
 
