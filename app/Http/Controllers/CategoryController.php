@@ -28,6 +28,37 @@ class CategoryController extends Controller
         ]);
     }
 
+
+    // Public - Single category with products
+    public function showBySlug(string $slug)
+    {
+        $category = Category::query()
+            ->withCount('products')
+            ->where('slug', $slug)
+            ->firstOrFail();
+
+        $products = $category->products()
+            ->with([
+                'brand:id,name',
+                'category:id,name',
+                'collections:id,name', 
+                'images' => fn ($q) => $q->where('is_main', true)
+                    ->select('id', 'product_id', 'image'),
+            ])
+            ->withAvg('ratings', 'rating')
+            ->withCount('ratings')
+            ->where('status', 'published')
+            ->orderByDesc('id')
+            ->get();
+
+        return response()->json([
+            'category' => $category,
+            'products' => $products,
+        ]);
+    }
+
+
+
     // -----------------------------------------
     // Admin - Paginated Categories
     // -----------------------------------------

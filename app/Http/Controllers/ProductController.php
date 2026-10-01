@@ -18,6 +18,9 @@ class ProductController extends Controller
             ->with([
                 'brand:id,name',
                 'category:id,name',
+                'collections:id,name', 
+                'sizes:id,size',
+                'colors:id,product_id,name,value',
                 'images' => function ($query) {
                     $query->where('is_main', true)
                         ->select('id', 'product_id', 'image');
@@ -132,6 +135,35 @@ class ProductController extends Controller
         ]);
     }
 
+    
+
+    // ProductController
+    public function related(string $slug)
+    {
+        $product = Product::query()
+            ->select('id', 'category_id')
+            ->where('slug', $slug)
+            ->where('status', 'published')
+            ->firstOrFail();
+
+        $related = Product::query()
+            ->with([
+                'brand:id,name',
+                'category:id,name',
+                'images' => fn ($q) => $q->where('is_main', true)
+                    ->select('id', 'product_id', 'image'),
+            ])
+            ->withAvg('ratings', 'rating')
+            ->withCount('ratings')
+            ->where('status', 'published')
+            ->where('category_id', $product->category_id)
+            ->where('id', '!=', $product->id)
+            ->orderByDesc('id')
+            ->limit(12)
+            ->get();
+
+        return response()->json(['products' => $related]);
+    }
 
 
 

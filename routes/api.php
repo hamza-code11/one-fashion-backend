@@ -10,7 +10,9 @@ use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductOptionController;
-
+use App\Http\Controllers\RatingController;
+use App\Http\Controllers\NewsletterController;
+use App\Http\Controllers\Api\ContactController;
 
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -29,14 +31,28 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 
-
 // public 
 Route::get('/size-guides', [SizeGuideController::class, 'index']);
 Route::get('/collections', [CollectionController::class, 'index']);
+Route::get('/collections/{slug}', [CollectionController::class, 'showBySlug']);
 Route::get('/brands', [BrandController::class, 'index']);
 Route::get('/categories', [CategoryController::class, 'index']);
+Route::get('/categories/{slug}', [CategoryController::class, 'showBySlug']);
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{slug}', [ProductController::class, 'show']);
+Route::get('/products/{slug}/related', [ProductController::class, 'related']);
+Route::get('/products/{slug}/ratings', [RatingController::class, 'index']);
+Route::post('/newsletters', [NewsletterController::class, 'store']);
+Route::post('/contacts', [ContactController::class, 'store']);
+
+
+
+// auth required — create/update review
+Route::middleware('auth:sanctum')->group(function () {
+    // ... existing routes
+    Route::post('/products/{slug}/ratings', [RatingController::class, 'store']);
+});
+
 
 
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
@@ -83,7 +99,6 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::delete('/products/{product}', [ProductController::class, 'destroy']);
 
 
-
     // Products form dropdown data
     Route::prefix('product-options')->group(function () {
 
@@ -93,6 +108,11 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
         Route::get('/sizes', [ProductOptionController::class, 'sizes']);
 
     });
+
+
+
+    Route::get('/newsletters', [NewsletterController::class, 'index']);
+    Route::get('/contacts', [ContactController::class, 'index']);
 
 });
 
