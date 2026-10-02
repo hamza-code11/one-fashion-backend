@@ -16,11 +16,23 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
        $this->call([
+            // UserSeeder::class,
             // SizeGuideSeeder::class,
             // CollectionSeeder::class,
             // BrandSeeder::class,
             // CategorySeeder::class,
-            ProductSeeder::class,
+            // ProductSeeder::class,
+            // RatingSeeder::class,
+            // HeroSlideSeeder::class,
+            // PromoBannerSeeder::class,
+            // StatItemSeeder::class,
+            // AboutSeeder::class,
+            // FaqSeeder::class,
+            // AnnouncementSeeder::class,
+            // InstagramSeeder::class,
+            // NewsletterSeeder::class,
+            // ContactSeeder::class,
+            // ContactInfoSeeder::class,
         ]);
     }
 }

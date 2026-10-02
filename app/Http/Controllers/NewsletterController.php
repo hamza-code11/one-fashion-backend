@@ -33,4 +33,15 @@ class NewsletterController extends Controller
             'data' => $newsletter,
         ], 201);
     }
+
+    public function destroy(Newsletter $newsletter)
+    {
+        $newsletter->delete();
+
+        return response()->json([
+            'message' => 'Subscriber removed successfully.',
+        ]);
+    }
+
+
 }

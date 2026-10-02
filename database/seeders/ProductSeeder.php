@@ -8,259 +8,275 @@ use App\Models\Collection;
 use App\Models\Product;
 use App\Models\SizeGuide;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class ProductSeeder extends Seeder
 {
     public function run(): void
     {
-        /*
-         * |--------------------------------------------------------------------------
-         * | Ensure parent data exists
-         * |--------------------------------------------------------------------------
-         * Brands, Categories, Collections, SizeGuides already seeded hain
-         * toh yahan sirf references utha rahe hain.
-         */
+        $brandIds = Brand::pluck('id')->toArray();
+        $categoryIds = Category::pluck('id')->toArray();
+        $collectionIds = Collection::pluck('id')->toArray();
+        $sizeIds = SizeGuide::pluck('id')->toArray();
 
-        $brands = Brand::pluck('id')->toArray();
-        $categories = Category::pluck('id')->toArray();
-        $collections = Collection::pluck('id')->toArray();
-        $sizes = SizeGuide::pluck('id')->toArray();
-
-        if (empty($brands) || empty($categories)) {
-            $this->command->warn(
-                'Brands ya Categories empty hain. Pehle un ke seeders chalao.'
-            );
+        if (empty($brandIds) || empty($categoryIds)) {
+            $this->command->error('Brands aur Categories pehle seed karo.');
             return;
         }
 
-        /*
-         * |--------------------------------------------------------------------------
-         * | 12 Products — realistic catalog mix
-         * |--------------------------------------------------------------------------
-         */
-
         $products = [
             [
-                'name'         => 'Classic Cotton T-Shirt',
-                'description'  => 'Soft breathable cotton t-shirt with a relaxed fit. Perfect for everyday wear.',
-                'price'        => 1499,
-                'old_price'    => 1999,
-                'gender'       => 'Men',
+                'name'         => 'Floral Cotton Frock',
+                'slug'         => 'floral-cotton-frock',
+                'description'  => 'A breezy floral frock in soft cotton, perfect for everyday summer adventures.',
+                'price'        => 2899.00,
+                'old_price'    => 3499.00,
+                'gender'       => 'Girls',
                 'badge'        => 'SALE',
                 'status'       => 'published',
                 'stock_status' => 'in_stock',
                 'colors'       => [
-                    ['name' => 'White',  'value' => '#FFFFFF'],
-                    ['name' => 'Black',  'value' => '#000000'],
+                    ['name' => 'Pink', 'value' => '#e3aab8'],
+                    ['name' => 'Cream', 'value' => '#dacec4'],
+                ],
+                'images'       => [
+                    ['image' => 'https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?w=600&q=80', 'is_main' => true],
+                    ['image' => 'https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?w=600&q=80', 'is_main' => false],
                 ],
             ],
             [
-                'name'         => 'Slim Fit Denim Jeans',
-                'description'  => 'Stretch denim with a modern slim cut. Comfortable all-day wear.',
-                'price'        => 3499,
+                'name'         => 'Denim Overalls',
+                'slug'         => 'denim-overalls',
+                'description'  => 'Durable denim overalls built for playground adventures and messy afternoons.',
+                'price'        => 3599.00,
                 'old_price'    => null,
-                'gender'       => 'Men',
+                'gender'       => 'Kids',
                 'badge'        => 'NEW',
                 'status'       => 'published',
                 'stock_status' => 'in_stock',
                 'colors'       => [
-                    ['name' => 'Indigo', 'value' => '#2E4057'],
+                    ['name' => 'Blue', 'value' => '#3b5998'],
+                    ['name' => 'Black', 'value' => '#000000'],
+                ],
+                'images'       => [
+                    ['image' => 'https://images.unsplash.com/photo-1503944583220-79d8926ad5e2?w=600&q=80', 'is_main' => true],
                 ],
             ],
             [
-                'name'         => 'Floral Summer Dress',
-                'description'  => 'Lightweight floral dress with a flattering silhouette.',
-                'price'        => 2799,
-                'old_price'    => 3499,
-                'gender'       => 'Women',
+                'name'         => 'Striped T-Shirt',
+                'slug'         => 'striped-tshirt',
+                'description'  => 'Classic stripes, breathable cotton — a wardrobe staple for every little one.',
+                'price'        => 1299.00,
+                'old_price'    => null,
+                'gender'       => 'Unisex',
+                'badge'        => null,
+                'status'       => 'published',
+                'stock_status' => 'in_stock',
+                'colors'       => [
+                    ['name' => 'Navy', 'value' => '#1e3a8a'],
+                    ['name' => 'White', 'value' => '#ffffff'],
+                ],
+                'images'       => [
+                    ['image' => 'https://images.unsplash.com/photo-1522771930-78848d9293e8?w=600&q=80', 'is_main' => true],
+                ],
+            ],
+            [
+                'name'         => 'Corduroy Pants',
+                'slug'         => 'corduroy-pants',
+                'description'  => 'Warm corduroy trousers with a comfortable elastic waist — ideal for cooler days.',
+                'price'        => 2499.00,
+                'old_price'    => 2999.00,
+                'gender'       => 'Boys',
                 'badge'        => 'SALE',
                 'status'       => 'published',
                 'stock_status' => 'in_stock',
                 'colors'       => [
-                    ['name' => 'Pink',   'value' => '#F4A6B8'],
-                    ['name' => 'Yellow', 'value' => '#F4D35E'],
+                    ['name' => 'Brown', 'value' => '#6e3621'],
+                    ['name' => 'Olive', 'value' => '#594f07'],
+                ],
+                'images'       => [
+                    ['image' => 'https://images.unsplash.com/photo-1519457431-44ccd64a579b?w=600&q=80', 'is_main' => true],
                 ],
             ],
             [
-                'name'         => 'Wool Blend Winter Coat',
-                'description'  => 'Elegant wool-blend coat with a tailored fit for cold days.',
-                'price'        => 8999,
+                'name'         => 'Knitted Cardigan',
+                'slug'         => 'knitted-cardigan',
+                'description'  => 'Soft knitted cardigan with wooden buttons — cosy layers for cooler evenings.',
+                'price'        => 3299.00,
                 'old_price'    => null,
-                'gender'       => 'Women',
+                'gender'       => 'Girls',
                 'badge'        => 'HOT',
                 'status'       => 'published',
                 'stock_status' => 'in_stock',
                 'colors'       => [
-                    ['name' => 'Camel', 'value' => '#C19A6B'],
-                    ['name' => 'Navy',  'value' => '#1B2A4E'],
+                    ['name' => 'Cream', 'value' => '#dacec4'],
+                    ['name' => 'Pink', 'value' => '#e3aab8'],
+                ],
+                'images'       => [
+                    ['image' => 'https://images.unsplash.com/photo-1596870230751-ebdfce98ec42?w=600&q=80', 'is_main' => true],
                 ],
             ],
             [
-                'name'         => 'Kids Cartoon Hoodie',
-                'description'  => 'Fun cartoon-print hoodie with a soft fleece lining.',
-                'price'        => 1299,
-                'old_price'    => 1599,
-                'gender'       => 'Kids',
-                'badge'        => 'SALE',
-                'status'       => 'published',
-                'stock_status' => 'in_stock',
-                'colors'       => [
-                    ['name' => 'Blue',  'value' => '#4A90E2'],
-                    ['name' => 'Green', 'value' => '#7ED321'],
-                ],
-            ],
-            [
-                'name'         => 'Kids Denim Dungaree',
-                'description'  => 'Cute and durable denim dungaree for little ones.',
-                'price'        => 1899,
+                'name'         => 'Printed Co-ord Set',
+                'slug'         => 'printed-coord-set',
+                'description'  => 'Matching top and shorts in a playful print — easy, breezy summer dressing.',
+                'price'        => 2799.00,
                 'old_price'    => null,
-                'gender'       => 'Kids',
-                'badge'        => null,
-                'status'       => 'published',
-                'stock_status' => 'out_of_stock',
-                'colors'       => [
-                    ['name' => 'Light Blue', 'value' => '#A2C8E8'],
-                ],
-            ],
-            [
-                'name'         => 'Unisex Oversized Sweatshirt',
-                'description'  => 'Cozy oversized sweatshirt with a minimal design.',
-                'price'        => 2299,
-                'old_price'    => 2999,
-                'gender'       => 'Unisex',
-                'badge'        => 'SALE',
-                'status'       => 'published',
-                'stock_status' => 'in_stock',
-                'colors'       => [
-                    ['name' => 'Grey',  'value' => '#B0B0B0'],
-                    ['name' => 'Beige', 'value' => '#D9C7B8'],
-                ],
-            ],
-            [
-                'name'         => 'Unisex Baseball Cap',
-                'description'  => 'Adjustable cotton cap with embroidered logo.',
-                'price'        => 899,
-                'old_price'    => null,
-                'gender'       => 'Unisex',
+                'gender'       => 'Girls',
                 'badge'        => 'NEW',
                 'status'       => 'published',
                 'stock_status' => 'in_stock',
                 'colors'       => [
-                    ['name' => 'Black', 'value' => '#000000'],
-                    ['name' => 'Khaki', 'value' => '#C3B091'],
+                    ['name' => 'Yellow', 'value' => '#f4d35e'],
+                ],
+                'images'       => [
+                    ['image' => 'https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?w=600&q=80', 'is_main' => true],
                 ],
             ],
             [
-                'name'         => 'Men Leather Jacket',
-                'description'  => 'Classic leather jacket with zip closure and quilted lining.',
-                'price'        => 12999,
-                'old_price'    => 15999,
-                'gender'       => 'Men',
-                'badge'        => 'HOT',
+                'name'         => 'Baby Bodysuit Pack',
+                'slug'         => 'baby-bodysuit-pack',
+                'description'  => 'Pack of three soft cotton bodysuits with snap closures — gentle on newborn skin.',
+                'price'        => 1899.00,
+                'old_price'    => 2299.00,
+                'gender'       => 'Baby',
+                'badge'        => 'SALE',
                 'status'       => 'published',
                 'stock_status' => 'in_stock',
                 'colors'       => [
-                    ['name' => 'Brown', 'value' => '#5C4033'],
-                    ['name' => 'Black', 'value' => '#000000'],
+                    ['name' => 'White', 'value' => '#ffffff'],
+                    ['name' => 'Grey', 'value' => '#a1a1aa'],
+                ],
+                'images'       => [
+                    ['image' => 'https://images.unsplash.com/photo-1519457431-44ccd64a579b?w=600&q=80', 'is_main' => true],
                 ],
             ],
             [
-                'name'         => 'Women Silk Blouse',
-                'description'  => 'Elegant silk blouse with a subtle sheen and relaxed fit.',
-                'price'        => 3299,
+                'name'         => 'Hooded Sweatshirt',
+                'slug'         => 'hooded-sweatshirt',
+                'description'  => 'Fleece-lined hooded sweatshirt with kangaroo pocket — winter favourite.',
+                'price'        => 2999.00,
                 'old_price'    => null,
-                'gender'       => 'Women',
+                'gender'       => 'Boys',
+                'badge'        => null,
+                'status'       => 'published',
+                'stock_status' => 'in_stock',
+                'colors'       => [
+                    ['name' => 'Charcoal', 'value' => '#374151'],
+                    ['name' => 'Navy', 'value' => '#1e3a8a'],
+                ],
+                'images'       => [
+                    ['image' => 'https://images.unsplash.com/photo-1503944583220-79d8926ad5e2?w=600&q=80', 'is_main' => true],
+                ],
+            ],
+            [
+                'name'         => 'Linen Summer Dress',
+                'slug'         => 'linen-summer-dress',
+                'description'  => 'Lightweight linen dress with smocked bodice — perfect for warm afternoons.',
+                'price'        => 3899.00,
+                'old_price'    => null,
+                'gender'       => 'Girls',
                 'badge'        => 'NEW',
                 'status'       => 'published',
                 'stock_status' => 'in_stock',
                 'colors'       => [
-                    ['name' => 'Cream', 'value' => '#F5F0E1'],
-                    ['name' => 'Rose',  'value' => '#E8B4B8'],
+                    ['name' => 'Cream', 'value' => '#dacec4'],
+                    ['name' => 'Sky', 'value' => '#87ceeb'],
+                ],
+                'images'       => [
+                    ['image' => 'https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?w=600&q=80', 'is_main' => true],
                 ],
             ],
             [
-                'name'         => 'Kids Striped T-Shirt',
-                'description'  => 'Soft cotton t-shirt with playful stripes.',
-                'price'        => 799,
-                'old_price'    => 1099,
-                'gender'       => 'Kids',
-                'badge'        => 'SALE',
-                'status'       => 'draft',
-                'stock_status' => 'in_stock',
-                'colors'       => [
-                    ['name' => 'Red', 'value' => '#E94B3C'],
-                ],
-            ],
-            [
-                'name'         => 'Unisex Sports Shorts',
-                'description'  => 'Moisture-wicking shorts designed for active days.',
-                'price'        => 1399,
+                'name'         => 'Twill Chino Shorts',
+                'slug'         => 'twill-chino-shorts',
+                'description'  => 'Smart-casual chino shorts with an adjustable waistband for growing kids.',
+                'price'        => 1799.00,
                 'old_price'    => null,
-                'gender'       => 'Unisex',
+                'gender'       => 'Boys',
                 'badge'        => null,
-                'status'       => 'draft',
+                'status'       => 'published',
                 'stock_status' => 'in_stock',
                 'colors'       => [
-                    ['name' => 'Charcoal', 'value' => '#36454F'],
+                    ['name' => 'Beige', 'value' => '#d4c5a9'],
+                    ['name' => 'Olive', 'value' => '#594f07'],
+                ],
+                'images'       => [
+                    ['image' => 'https://images.unsplash.com/photo-1522771930-78848d9293e8?w=600&q=80', 'is_main' => true],
+                ],
+            ],
+            [
+                'name'         => 'Ribbed Leggings',
+                'slug'         => 'ribbed-leggings',
+                'description'  => 'Stretchy ribbed leggings that move with every jump, skip and tumble.',
+                'price'        => 999.00,
+                'old_price'    => null,
+                'gender'       => 'Girls',
+                'badge'        => null,
+                'status'       => 'published',
+                'stock_status' => 'in_stock',
+                'colors'       => [
+                    ['name' => 'Black', 'value' => '#000000'],
+                    ['name' => 'Grey', 'value' => '#a1a1aa'],
+                ],
+                'images'       => [
+                    ['image' => 'https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?w=600&q=80', 'is_main' => true],
+                ],
+            ],
+            [
+                'name'         => 'Puffer Jacket',
+                'slug'         => 'puffer-jacket',
+                'description'  => 'Lightweight puffer jacket with a water-repellent shell — winter-ready.',
+                'price'        => 4999.00,
+                'old_price'    => 5999.00,
+                'gender'       => 'Unisex',
+                'badge'        => 'SALE',
+                'status'       => 'published',
+                'stock_status' => 'in_stock',
+                'colors'       => [
+                    ['name' => 'Red', 'value' => '#dc2626'],
+                    ['name' => 'Navy', 'value' => '#1e3a8a'],
+                ],
+                'images'       => [
+                    ['image' => 'https://images.unsplash.com/photo-1519457431-44ccd64a579b?w=600&q=80', 'is_main' => true],
                 ],
             ],
         ];
 
-        /*
-         * |--------------------------------------------------------------------------
-         * | Insert with transaction
-         * |--------------------------------------------------------------------------
-         */
+        foreach ($products as $index => $data) {
+            $colors = $data['colors'];
+            $images = $data['images'];
 
-        DB::transaction(function () use (
-            $products,
-            $brands,
-            $categories,
-            $collections,
-            $sizes
-        ) {
-            foreach ($products as $index => $data) {
-                $product = Product::create([
-                    'brand_id'     => $brands[array_rand($brands)],
-                    'category_id'  => $categories[array_rand($categories)],
-                    'name'         => $data['name'],
-                    'slug'         => Str::slug($data['name']) . '-' . ($index + 1),
-                    'description'  => $data['description'],
-                    'price'        => $data['price'],
-                    'old_price'    => $data['old_price'],
-                    'gender'       => $data['gender'],
-                    'badge'        => $data['badge'],
-                    'status'       => $data['status'],
-                    'stock_status' => $data['stock_status'],
-                ]);
+            unset($data['colors'], $data['images']);
 
-                /* colors */
-                if (!empty($data['colors'])) {
-                    $product->colors()->createMany($data['colors']);
-                }
+            $product = Product::create([
+                ...$data,
+                'brand_id'    => $brandIds[$index % count($brandIds)],
+                'category_id' => $categoryIds[$index % count($categoryIds)],
+            ]);
 
-                /* sizes — random 2-4 */
-                if (!empty($sizes)) {
-                    $randomSizes = collect($sizes)
-                        ->shuffle()
-                        ->take(rand(2, min(4, count($sizes))))
-                        ->toArray();
-                    $product->sizes()->sync($randomSizes);
-                }
-
-                /* collections — random 1-2 */
-                if (!empty($collections)) {
-                    $randomCollections = collect($collections)
-                        ->shuffle()
-                        ->take(rand(1, min(2, count($collections))))
-                        ->toArray();
-                    $product->collections()->sync($randomCollections);
-                }
+            foreach ($colors as $color) {
+                $product->colors()->create($color);
             }
-        });
 
-        $this->command->info('12 products seeded successfully.');
+            foreach ($images as $image) {
+                $product->images()->create($image);
+            }
+
+            if (!empty($sizeIds)) {
+                $randomSizes = collect($sizeIds)->shuffle()->take(3)->toArray();
+                $product->sizes()->sync($randomSizes);
+            }
+
+            if (!empty($collectionIds)) {
+                $randomCollections = collect($collectionIds)
+                    ->shuffle()
+                    ->take(rand(1, 2))
+                    ->toArray();
+                $product->collections()->sync($randomCollections);
+            }
+        }
+
+        $this->command->info('Products seeded: ' . count($products));
     }
 }
+

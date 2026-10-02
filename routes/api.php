@@ -12,7 +12,17 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductOptionController;
 use App\Http\Controllers\RatingController;
 use App\Http\Controllers\NewsletterController;
-use App\Http\Controllers\Api\ContactController;
+use App\Http\Controllers\ContactController;
+use App\Http\Controllers\HeroSlideController;
+use App\Http\Controllers\PromoBannerController;
+use App\Http\Controllers\StatItemController;
+use App\Http\Controllers\AboutController;
+use App\Http\Controllers\FaqController;
+use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\InstagramController;
+use App\Http\Controllers\ContactInfoController;
+
+
 
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -44,6 +54,18 @@ Route::get('/products/{slug}/related', [ProductController::class, 'related']);
 Route::get('/products/{slug}/ratings', [RatingController::class, 'index']);
 Route::post('/newsletters', [NewsletterController::class, 'store']);
 Route::post('/contacts', [ContactController::class, 'store']);
+
+
+
+Route::get('/hero-slides', [HeroSlideController::class, 'index']);
+Route::get('/promo-banners', [PromoBannerController::class, 'index']);
+Route::get('/stat-items', [StatItemController::class, 'index']);
+Route::get('/about', [AboutController::class, 'index']);
+Route::get('/faq', [FaqController::class, 'index']);
+Route::get('/announcements', [AnnouncementController::class, 'index']);
+Route::get('/instagram', [InstagramController::class, 'index']);
+Route::get('/contact-info', [ContactInfoController::class, 'index']);
+
 
 
 
@@ -110,10 +132,73 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     });
 
 
-
+    
+    // Newsletters
     Route::get('/newsletters', [NewsletterController::class, 'index']);
-    Route::get('/contacts', [ContactController::class, 'index']);
+    Route::delete('/newsletters/{newsletter}', [NewsletterController::class, 'destroy']);
 
+    // Contact
+    Route::get('/contacts', [ContactController::class, 'index']);
+    Route::delete('/contacts/{contact}', [ContactController::class, 'destroy']);
+
+
+    // Contact Info
+    Route::get('/contact-info', [ContactInfoController::class, 'index']);
+    Route::post('/contact-info', [ContactInfoController::class, 'update']);
+
+
+
+    // Hero slides
+    Route::get('/hero-slides', [HeroSlideController::class, 'index']);
+    Route::post('/hero-slides', [HeroSlideController::class, 'store']);
+    Route::get('/hero-slides/{heroSlide}', [HeroSlideController::class, 'show']);
+    Route::put('/hero-slides/{heroSlide}', [HeroSlideController::class, 'update']);
+    Route::delete('/hero-slides/{heroSlide}', [HeroSlideController::class, 'destroy']);
+
+
+    // Promo banners
+    Route::get('/promo-banners', [PromoBannerController::class, 'index']);
+    Route::post('/promo-banners', [PromoBannerController::class, 'store']);
+    Route::get('/promo-banners/{promoBanner}', [PromoBannerController::class, 'show']);
+    Route::put('/promo-banners/{promoBanner}', [PromoBannerController::class, 'update']);
+    Route::delete('/promo-banners/{promoBanner}', [PromoBannerController::class, 'destroy']);
+
+
+    // Stat items
+    Route::get('/stat-items', [StatItemController::class, 'index']);
+    Route::post('/stat-items', [StatItemController::class, 'store']);
+    Route::get('/stat-items/{statItem}', [StatItemController::class, 'show']);
+    Route::put('/stat-items/{statItem}', [StatItemController::class, 'update']);
+    Route::delete('/stat-items/{statItem}', [StatItemController::class, 'destroy']);
+
+
+    // About page
+    Route::get('/about', [AboutController::class, 'index']);
+    Route::post('/about', [AboutController::class, 'update']);
+
+
+    // FAQ
+    Route::get('/faq', [FaqController::class, 'index']);
+    Route::post('/faq', [FaqController::class, 'update']);
+
+
+    // Announcements
+    Route::get('/announcements', [AnnouncementController::class, 'index']);
+    Route::post('/announcements', [AnnouncementController::class, 'store']);
+    Route::get('/announcements/{announcement}', [AnnouncementController::class, 'show']);
+    Route::put('/announcements/{announcement}', [AnnouncementController::class, 'update']);
+    Route::delete('/announcements/{announcement}', [AnnouncementController::class, 'destroy']);
+
+
+    // Instagram
+    Route::post('/instagram/settings', [InstagramController::class, 'updateSettings']);
+
+    Route::get('/instagram/posts/{post}', [InstagramController::class, 'show']);
+    Route::post('/instagram/posts', [InstagramController::class, 'store']);
+    Route::post('/instagram/posts/{post}', [InstagramController::class, 'update']);
+    Route::delete('/instagram/posts/{post}', [InstagramController::class, 'destroy']);
+
+    
 });
 
 
